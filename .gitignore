@@ -1,0 +1,60 @@
+# Swift Package Manager
+.build/
+.swiftpm/
+Package.resolved
+
+# Xcode
+*.xcodeproj
+*.xcworkspace
+xcuserdata/
+DerivedData/
+.DS_Store
+
+# Build artifacts
+*.app
+*.dmg
+*.dSYM.zip
+*.dSYM
+build/
+*.ipa
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+# Editor directories and files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.vim/
+
+# Environment
+.env
+.env.local
+
+# Claude Code
+.claude/
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.temp
