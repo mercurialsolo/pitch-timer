@@ -62,9 +62,9 @@ cat > "${CONTENTS_DIR}/Info.plist" << 'EOF'
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>CFBundleShortVersionString</key>
-    <string>1.0.0</string>
+    <string>1.1.0</string>
     <key>CFBundleVersion</key>
-    <string>1</string>
+    <string>2</string>
     <key>LSMinimumSystemVersion</key>
     <string>13.0</string>
     <key>LSUIElement</key>
@@ -84,7 +84,7 @@ echo "✅ App bundle created at: build/${APP_NAME}"
 
 # Create DMG
 echo "💿 Creating DMG..."
-DMG_NAME="PitchTimer-1.0.0.dmg"
+DMG_NAME="PitchTimer-1.1.0.dmg"
 DMG_TEMP="build/dmg-temp"
 DMG_PATH="build/${DMG_NAME}"
 
@@ -128,15 +128,20 @@ If you see "PitchTimer is damaged" error:
 KEYBOARD SHORTCUTS:
 • Cmd+Shift+T    Start/Stop timer
 • Cmd+Shift+R    Reset timer
+• Cmd+Shift+F    Toggle full-screen mode
 • Cmd+Shift+↑    Increase duration by 1 minute
 • Cmd+Shift+↓    Decrease duration by 1 minute
 • Cmd+Shift+D    Open duration dialog
+• ESC            Exit full-screen mode
 
 FEATURES:
 • Menu bar timer with overlay display
+• Full-screen presentation mode with large centered timer
 • Overtime tracking (continues counting with red background after zero)
 • Draggable overlay window
-• Large, easy-to-read display (48pt font)
+• Large, easy-to-read display (48pt overlay, 150pt full-screen)
+• Screen selection for multi-monitor setups
+• Network sync support for multiple devices
 • Customizable duration, position, and alerts
 • CLI support: PitchTimer -d 600
 
