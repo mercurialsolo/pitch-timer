@@ -9,6 +9,7 @@ enum HotkeyType {
     case setDuration
     case hostNetwork
     case joinNetwork
+    case toggleFullScreen
 }
 
 protocol HotkeyManagerDelegate: AnyObject {
@@ -45,6 +46,8 @@ class HotkeyManager {
                 manager.delegate?.hotkeyPressed(type: .hostNetwork)
             case 7:
                 manager.delegate?.hotkeyPressed(type: .joinNetwork)
+            case 8:
+                manager.delegate?.hotkeyPressed(type: .toggleFullScreen)
             default:
                 break
             }
@@ -102,6 +105,13 @@ class HotkeyManager {
         let joinNetworkKey = UInt32(kVK_ANSI_J)
         RegisterEventHotKey(joinNetworkKey, modifiers, joinNetworkID, GetApplicationEventTarget(), 0, &joinNetworkRef)
         hotKeyRefs.append(joinNetworkRef)
+
+        // Register Cmd+Shift+F for toggle full screen
+        var fullScreenRef: EventHotKeyRef?
+        let fullScreenID = EventHotKeyID(signature: OSType(0x54494D52), id: 8) // 'TIMR'
+        let fullScreenKey = UInt32(kVK_ANSI_F)
+        RegisterEventHotKey(fullScreenKey, modifiers, fullScreenID, GetApplicationEventTarget(), 0, &fullScreenRef)
+        hotKeyRefs.append(fullScreenRef)
     }
 
     func unregisterHotkeys() {

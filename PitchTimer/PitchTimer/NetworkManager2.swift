@@ -12,6 +12,7 @@ enum TimerCommand: Codable {
     case reset
     case setDuration(Int)
     case updateTime(Int, Bool) // timeRemaining, isRunning
+    case setDisplayMode(DisplayMode)
 }
 
 enum ConnectionStatus {

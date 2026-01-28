@@ -4,6 +4,7 @@ import Carbon
 class AppDelegate: NSObject, NSApplicationDelegate {
     var statusItem: NSStatusItem?
     var timerWindowController: TimerWindowController?
+    var fullScreenWindowController: FullScreenWindowController?
     var timerManager: TimerManager!
     var hotkeyManager: HotkeyManager!
     var preferences: Preferences!
@@ -94,6 +95,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         // Show/Hide Overlay
         menu.addItem(NSMenuItem(title: "Toggle Overlay", action: #selector(toggleOverlay), keyEquivalent: ""))
+
+        // Full Screen
+        let fullScreenItem = NSMenuItem(title: "Enter Full Screen", action: #selector(toggleFullScreen), keyEquivalent: "f")
+        fullScreenItem.keyEquivalentModifierMask = [.command, .shift]
+        fullScreenItem.tag = 4
+        menu.addItem(fullScreenItem)
 
         menu.addItem(NSMenuItem.separator())
 
@@ -262,6 +269,52 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     @objc private func toggleOverlay() {
         timerWindowController?.toggleVisibility()
+    }
+
+    @objc private func toggleFullScreen() {
+        let newMode: DisplayMode = (preferences.displayMode == .fullScreen) ? .overlay : .fullScreen
+        switchDisplayMode(to: newMode)
+    }
+
+    private func switchDisplayMode(to mode: DisplayMode) {
+        preferences.displayMode = mode
+
+        switch mode {
+        case .overlay:
+            // Close full-screen
+            fullScreenWindowController?.close()
+            fullScreenWindowController = nil
+
+            // Show overlay
+            timerWindowController?.window?.makeKeyAndOrderFront(nil)
+
+        case .fullScreen:
+            // Hide overlay
+            timerWindowController?.window?.orderOut(nil)
+
+            // Create and show full-screen
+            fullScreenWindowController = FullScreenWindowController(preferences: preferences)
+            fullScreenWindowController?.delegate = self
+            fullScreenWindowController?.showOnScreen(preferences.preferredFullScreenScreen)
+
+            // Update with current time
+            fullScreenWindowController?.updateDisplay(timeRemaining: timerManager.currentTime)
+        }
+
+        // Broadcast to network peers
+        networkManager.broadcast(.setDisplayMode(mode))
+
+        // Update menu item title
+        updateFullScreenMenuItem()
+    }
+
+    private func updateFullScreenMenuItem() {
+        guard let menu = statusItem?.menu else { return }
+        let title = (preferences.displayMode == .fullScreen) ? "Exit Full Screen" : "Enter Full Screen"
+        for item in menu.items where item.tag == 4 {
+            item.title = title
+            break
+        }
     }
 
     @objc private func resetTimer() {
@@ -472,7 +525,12 @@ extension AppDelegate: TimerManagerDelegate {
     }
 
     func timerDidUpdate(timeRemaining: Int) {
-        timerWindowController?.updateDisplay(timeRemaining: timeRemaining)
+        switch preferences.displayMode {
+        case .overlay:
+            timerWindowController?.updateDisplay(timeRemaining: timeRemaining)
+        case .fullScreen:
+            fullScreenWindowController?.updateDisplay(timeRemaining: timeRemaining)
+        }
     }
 }
 
@@ -493,6 +551,8 @@ extension AppDelegate: HotkeyManagerDelegate {
             hostNetwork()
         case .joinNetwork:
             joinNetwork()
+        case .toggleFullScreen:
+            toggleFullScreen()
         }
     }
 }
@@ -520,6 +580,10 @@ extension AppDelegate: NetworkManagerDelegate {
             // Sync timer state from host (perfect sync)
             timerManager.setTime(time, isRunning: running)
             updateMenuItemTitle(tag: 1, title: running ? "Stop Timer" : "Start Timer")
+        case .setDisplayMode(let mode):
+            if preferences.displayMode != mode {
+                switchDisplayMode(to: mode)
+            }
         }
     }
 
@@ -534,6 +598,9 @@ extension AppDelegate: SettingsWindowDelegate {
     func settingsDidChange() {
         // Reset timer with new duration
         timerManager.reset()
+
+        // Switch display mode if changed
+        switchDisplayMode(to: preferences.displayMode)
 
         // Update overlay position
         timerWindowController?.updatePosition()
@@ -554,5 +621,13 @@ extension AppDelegate: TimerWindowDelegate {
     func timerWindowDidChangePosition() {
         // Update menu items to reflect custom position
         updatePositionMenuItems()
+    }
+}
+
+// MARK: - FullScreenWindowDelegate
+
+extension AppDelegate: FullScreenWindowDelegate {
+    func fullScreenWindowDidRequestExit() {
+        switchDisplayMode(to: .overlay)
     }
 }
